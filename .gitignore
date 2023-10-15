@@ -1,0 +1,7 @@
+results/*
+data/*
+.idea/
+**/__pycache__/*
+**/.DS_Store
+models/*
+src/visualization/*.png
