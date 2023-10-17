@@ -434,16 +434,6 @@ def main():
                 for g in enc_groups[0:-1]:
                     ctx_groups.append(g[0].detach().cpu())
 
-            # scores.append(output[batch_idx][0]["positional_scores"].cpu().tolist())
-
-            # collect output to be prefix for next utterance
-            # idx = batch_map[batch_idx]
-            # if args.gold_target_context:
-            #     tgt_context_lines[idx].append(batch_targets[batch_idx])
-            # else:
-            #     tgt_context_lines[idx].append(
-            #         hyp_ids[:-1] if hyp_ids[-1] == tgt_dict.eos() else hyp_ids
-            #     )
         hyps = scorer.generate(models, sample)
         scores = [h[0]["score"] for h in hyps]
         all_scores = all_scores + scores

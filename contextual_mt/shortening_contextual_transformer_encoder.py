@@ -104,62 +104,6 @@ def group_tokens(encoder_tokens, tokens_to_group, padding_mask, shortening_cat, 
 
     return pooled_tokens, shortened_padding_mask, groups
 
-
-# class TransformerEncoderLayerWrapper(transformer_layer.TransformerEncoderLayerBase):
-#     def forward(
-#             self,
-#             x,
-#             padding_mask: Optional[torch.Tensor] = None,
-#             other: Optional[torch.Tensor] = None,
-#             other_padding_mask: Optional[torch.Tensor] = None,
-#     ):
-#         return super(TransformerEncoderLayerWrapper, self).forward(
-#             x,
-#             padding_mask,
-#             attn_mask=None,
-#         )
-
-
-# class TransformerCrossEncoderLayerWrapper(transformer_layer.TransformerDecoderLayerBase):
-#     def forward(
-#             self,
-#             x,
-#             padding_mask: Optional[torch.Tensor] = None,
-#             other: Optional[torch.Tensor] = None,
-#             other_padding_mask: Optional[torch.Tensor] = None,
-#     ):
-#         # x,
-#         # encoder_out: Optional[torch.Tensor] = None,
-#         # encoder_padding_mask: Optional[torch.Tensor] = None,
-#         # incremental_state: Optional[Dict[str, Dict[str, Optional[Tensor]]]] = None,
-#         # prev_self_attn_state: Optional[List[torch.Tensor]] = None,
-#         # prev_attn_state: Optional[List[torch.Tensor]] = None,
-#         # self_attn_mask: Optional[torch.Tensor] = None,
-#         # self_attn_padding_mask: Optional[torch.Tensor] = None,
-#         # need_attn: bool = False,
-#         # need_head_weights: bool = False,
-#         x_out, attn, self_attn_state = super(TransformerCrossEncoderLayerWrapper, self).forward(
-#             x=x,
-#             encoder_out=other,
-#             encoder_padding_mask=other_padding_mask,
-#             self_attn_padding_mask=padding_mask,
-#         )
-#         return x_out
-#
-#     def upgrade_state_dict_named(self, state_dict, name):
-#         # print(name)
-#         return state_dict
-#
-#
-# class MultiplyLayer(torch.nn.Module):
-#     def __init__(self, const=1.):
-#         super().__init__()
-#         self.const = const
-#
-#     def forward(self, x):
-#         return x * self.const
-
-
 class ShorteningTransformerEncoder(TransformerEncoder):
     def __init__(self, cfg, dictionary, embed_tokens, return_fc=False):
         super(ShorteningTransformerEncoder, self).__init__(cfg, dictionary, embed_tokens, return_fc)
