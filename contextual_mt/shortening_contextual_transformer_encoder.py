@@ -143,8 +143,6 @@ class ShorteningTransformerEncoder(TransformerEncoder):
                 self.shortening_cat_function = None
 
             num_positions = self.n_groups
-            if self.add_noop_group:
-                num_positions += 1
 
             self.group_positions = (
                 PositionalEmbedding(
@@ -175,10 +173,6 @@ class ShorteningTransformerEncoder(TransformerEncoder):
 
         self.shortening_attn = self.build_self_attention(self.embed_dim, cfg)
         self.shortening_layer_norm = LayerNorm(self.embed_dim)
-        self.shortening_linear = torch.nn.Linear(self.embed_dim, self.embed_dim) \
-            if self.perform_shortening_linear \
-            else None
-
         self.stop_grad_layer = StopGradLayer()
 
     def build_self_attention(self, embed_dim, cfg):
@@ -293,7 +287,7 @@ class ShorteningTransformerEncoder(TransformerEncoder):
             for layer in layers:
                 lr = layer(
                     x=x,
-                    padding_mask=padding_mask if has_pads else None,
+                    encoder_padding_mask=padding_mask if has_pads else None,
                 )
 
                 if isinstance(lr, tuple) and len(lr) == 2:
@@ -327,7 +321,6 @@ class ShorteningTransformerEncoder(TransformerEncoder):
         def encode_sentence(propagate_gradient_pre, propagate_gradient_post,
                             perform_shortening,
                             tokens):
-            # if propagate_gradient_pre:
             embed_x, embed_padding_mask, has_pads, embedding = embed(tokens)
             embed_x, embed_states = encode(
                 tokens=embed_x,
@@ -354,25 +347,15 @@ class ShorteningTransformerEncoder(TransformerEncoder):
                     group_pos = self.group_positions(positions) * (~padding_mask)[..., None]
                     x = x + group_pos
 
-                # x, states = encode(
-                #     tokens=x,
-                #     padding_mask=padding_mask,
-                #     has_pads=torch.tensor(0),
-                #     layers=self.post_grouping_layers,
-                #     layer_norm=self.post_grouping_layer_norm
-                # )
-
                 if not propagate_gradient_post:
                     x = self.stop_grad_layer(x)
 
-                # all_groups.append(groups)
             else:
                 x = embed_x
                 padding_mask = embed_padding_mask
-                states = embed_states
                 groups = None
 
-            return x, padding_mask, states, embed_x, embed_padding_mask, embed_states, embedding, groups
+            return x, padding_mask, embed_states, embed_x, embed_padding_mask, embedding, groups
 
         context_out = []
         context_padding_mask = []
@@ -389,7 +372,7 @@ class ShorteningTransformerEncoder(TransformerEncoder):
             for ctx_idx, (src_ctx, ctx_len) in enumerate(zip(src_ctx_tokens, src_ctx_lengths)):
                 propagate_context_gradient = (self.propagate_context_size_gradient is None
                                               or self.propagate_context_size_gradient >= ctx_size - ctx_idx)
-                ctx_x, ctx_encoder_padding_mask, ctx_encoder_states, _, _, _, _, groups = encode_sentence(
+                ctx_x, ctx_encoder_padding_mask, ctx_encoder_states, _, _, _, groups = encode_sentence(
                     propagate_gradient_pre=self.propagate_context_encoder_gradient,
                     propagate_gradient_post=propagate_context_gradient,
                     perform_shortening=True,
@@ -404,8 +387,8 @@ class ShorteningTransformerEncoder(TransformerEncoder):
         propagate_context_gradient = (self.propagate_context_size_gradient is None
                                       or self.propagate_context_size_gradient >= 0)
 
-        shortened_x, shortened_padding_mask, shortened_encoder_states, \
-        x, encoder_padding_mask, encoder_states, encoder_embedding, groups = encode_sentence(
+        shortened_x, shortened_padding_mask, encoder_states, \
+        x, encoder_padding_mask, encoder_embedding, groups = encode_sentence(
             propagate_gradient_pre=True,
             propagate_gradient_post=propagate_context_gradient,
             perform_shortening=self.use_current_context,
@@ -461,14 +444,6 @@ class ShorteningTransformerEncoder(TransformerEncoder):
             *encoder_out* rearranged according to *new_order*
         """
 
-        # "encoder_out": [x],  # B x T x C
-        # "encoder_padding_mask": [encoder_padding_mask],  # B x T
-        # "encoder_embedding": [encoder_embedding],  # B x T x C
-        # "encoder_states": encoder_states,  # List[List[T x B x C]]
-        # "context_out": context_out,  # List[B x G x C]
-        # "context_padding_mask": context_padding_mask,  # List[B x G]
-        # "context_states": context_states,  # List[List[G x B x C]]
-
         # Encoder outputs
         if len(encoder_out["encoder_out"]) == 0:
             new_encoder_out = []
@@ -501,11 +476,6 @@ class ShorteningTransformerEncoder(TransformerEncoder):
         else:
             new_context_padding_mask = [v.index_select(0, new_order) for v in encoder_out["context_padding_mask"]]
 
-        # new_context_states = encoder_out["context_states"]
-        # if len(new_context_states) > 0:
-        #     for idx, state in enumerate(new_context_states):
-        #         new_context_states[idx] = [s.index_select(1, new_order) for s in state]
-
         if len(encoder_out["src_tokens"]) == 0:
             src_tokens = []
         else:
@@ -536,13 +506,6 @@ class ShorteningTransformerEncoder(TransformerEncoder):
             new_groups = []
         else:
             new_groups = [v.index_select(0, new_order) for v in encoder_out['groups']]
-        # new_groups = []
-        # if len(encoder_out['groups']) > 0:
-        #     for v in encoder_out['groups']:
-        #         if v is not None:
-        #             new_groups.append(v.index_select(0, new_order))
-        #         else:
-        #             new_groups.append(None)
 
         return {
             "encoder_out": new_encoder_out,  # T x B x C
@@ -551,7 +514,6 @@ class ShorteningTransformerEncoder(TransformerEncoder):
             "encoder_states": new_encoder_states,  # List[T x B x C]
             "context_out": new_context_out,
             "context_padding_mask": new_context_padding_mask,
-            # "context_states": new_context_states,
             "src_tokens": src_tokens,  # B x T
             "src_lengths": src_lengths,  # B x 1
             "src_ctx_tokens": src_ctx_tokens,

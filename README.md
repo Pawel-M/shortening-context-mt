@@ -246,3 +246,15 @@ python path/to/contrapro/evaluate.py \
     --scores contrapro.scores \
     --maximize
 ```
+
+# Citation
+```
+@misc{mąka2024sequence,
+      title={Sequence Shortening for Context-Aware Machine Translation}, 
+      author={Paweł Mąka and Yusuf Can Semerci and Jan Scholtes and Gerasimos Spanakis},
+      year={2024},
+      eprint={2402.01416},
+      archivePrefix={arXiv},
+      primaryClass={cs.CL}
+}
+```
