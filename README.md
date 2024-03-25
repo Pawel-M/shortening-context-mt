@@ -1,5 +1,5 @@
 # Sequence Shortening for Context-aware Machine Translation
-Code for the paper "Sequence Shortening for Context-aware Machine Translation". 
+Code for the paper ["Sequence Shortening for Context-aware Machine Translation"](https://aclanthology.org/2024.findings-eacl.127/). 
 Based on https://github.com/neulab/contextual-mt repository.
 
 ## Installation
@@ -249,12 +249,22 @@ python path/to/contrapro/evaluate.py \
 
 # Citation
 ```
-@misc{mąka2024sequence,
-      title={Sequence Shortening for Context-Aware Machine Translation}, 
-      author={Paweł Mąka and Yusuf Can Semerci and Jan Scholtes and Gerasimos Spanakis},
-      year={2024},
-      eprint={2402.01416},
-      archivePrefix={arXiv},
-      primaryClass={cs.CL}
+@inproceedings{maka-etal-2024-sequence,
+    title = "Sequence Shortening for Context-Aware Machine Translation",
+    author = "Maka, Pawe{\l}  and
+      Semerci, Yusuf  and
+      Scholtes, Jan  and
+      Spanakis, Gerasimos",
+    editor = "Graham, Yvette  and
+      Purver, Matthew",
+    booktitle = "Findings of the Association for Computational Linguistics: EACL 2024",
+    month = mar,
+    year = "2024",
+    address = "St. Julian{'}s, Malta",
+    publisher = "Association for Computational Linguistics",
+    url = "https://aclanthology.org/2024.findings-eacl.127",
+    pages = "1874--1894",
+    abstract = "Context-aware Machine Translation aims to improve translations of sentences by incorporating surrounding sentences as context. Towards this task, two main architectures have been applied, namely single-encoder (based on concatenation) and multi-encoder models. In this study, we show that a special case of multi-encoder architecture, where the latent representation of the source sentence is cached and reused as the context in the next step, achieves higher accuracy on the contrastive datasets (where the models have to rank the correct translation among the provided sentences) and comparable BLEU and COMET scores as the single- and multi-encoder approaches. Furthermore, we investigate the application of Sequence Shortening to the cached representations. We test three pooling-based shortening techniques and introduce two novel methods - Latent Grouping and Latent Selecting, where the network learns to group tokens or selects the tokens to be cached as context. Our experiments show that the two methods achieve competitive BLEU and COMET scores and accuracies on the contrastive datasets to the other tested methods while potentially allowing for higher interpretability and reducing the growth of memory requirements with increased context size.",
 }
+
 ```
