@@ -92,6 +92,7 @@ def group_tokens(encoder_tokens, tokens_to_group, padding_mask, shortening_cat, 
     groups = shortening_cat(encoder_tokens)
     if shortening_function is not None:
         groups = (groups * torch.logical_not(padding_mask[..., None])) + (-1e8 * padding_mask[..., None])
+        groups = shortening_function(groups)
 
     groups = groups * torch.logical_not(padding_mask[..., None])
     weights = groups
@@ -103,6 +104,7 @@ def group_tokens(encoder_tokens, tokens_to_group, padding_mask, shortening_cat, 
                                          device=encoder_tokens.device)
 
     return pooled_tokens, shortened_padding_mask, groups
+
 
 class ShorteningTransformerEncoder(TransformerEncoder):
     def __init__(self, cfg, dictionary, embed_tokens, return_fc=False):
